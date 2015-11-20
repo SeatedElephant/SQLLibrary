@@ -1,2 +1,3 @@
 # SQLLibrary
-Useful SQL code collected and written over the years
+Useful SQL code collected and written over the years.
+D. Morris
