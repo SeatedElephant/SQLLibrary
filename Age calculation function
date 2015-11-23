@@ -1,0 +1,24 @@
+CREATE FUNCTION [dbo].[fn_calc_age] (@dob DATETIME)
+RETURNS VARCHAR(64)
+AS
+BEGIN
+	DECLARE @age INT
+	DECLARE @getdate DATETIME = GETDATE()
+
+	IF @dob >= @getdate
+		RETURN 'Invalid Input'
+
+	SET @age = DATEDIFF(yy, @dob, @getdate)
+
+	IF MONTH(@dob) > MONTH(@getdate)
+		OR (
+			MONTH(@dob) = MONTH(@getdate)
+			AND DAY(@dob) > DAY(@getdate)
+			)
+		SET @age = @age - 1
+
+	RETURN CONVERT(VARCHAR, @age) + ' Years and ' + CONVERT(VARCHAR, DATEDIFF(dd, DATEADD(yy, @age, @dob), @getdate)) + ' Days'
+END
+GO
+
+
