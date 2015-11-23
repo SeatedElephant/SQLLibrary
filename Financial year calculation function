@@ -1,0 +1,59 @@
+USE [test]
+GO
+
+/****** Object:  UserDefinedFunction [dbo].[DateToFinYear]    Script Date: 06/27/2014 15:50:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		David Morris
+-- Create date: 27-06-2014
+-- Description:	This scalar function takes a date field and returns a character 
+--              string that represents financial year of the date.
+-- =============================================
+CREATE FUNCTION [dbo].[DateToFinYear] (
+	-- Add the parameters for the function here
+	@date DATETIME
+	)
+RETURNS CHAR(9)
+AS
+BEGIN
+	-- Declare the return variable
+	DECLARE @financialYear CHAR(9)
+
+	-- The function uses the number of days in a year to get the previous or next month for the 
+	-- financial year value. Leap years still return the correct financial year value for all 
+	-- dates despite not being handled within the routine as the correct year is still returned
+	-- by the YEAR functions.
+	SET @financialYear = (
+			SELECT CASE 
+					WHEN DATEPART(mm, @date) IN (
+							4
+							,5
+							,6
+							,7
+							,8
+							,9
+							,10
+							,11
+							,12
+							)
+						THEN CAST(YEAR(@date) AS CHAR(4)) + '/' + CAST(YEAR(DATEADD(d, 365, @date)) AS CHAR(4))
+					WHEN DATEPART(mm, @date) IN (
+							1
+							,2
+							,3
+							)
+						THEN CAST(YEAR(DATEADD(d, - 365, @date)) AS CHAR(4)) + '/' + CAST(YEAR(@date) AS CHAR(4))
+					END
+			)
+
+	-- Return the result of the function
+	RETURN @financialYear
+END
+GO
+
+
