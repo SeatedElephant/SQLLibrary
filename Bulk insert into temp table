@@ -1,0 +1,40 @@
+USE Published_Corporate;
+GO
+
+IF OBJECT_ID('tempdb..#MyTempInsert') IS NOT NULL
+	DROP TABLE #MyTempInsert
+GO
+
+CREATE TABLE #MyTempInsert (
+	[Month] CHAR(8)
+	,Specialty VARCHAR(50)
+	,Category VARCHAR(100)
+	,Subcategory VARCHAR(50)
+	,[Count] VARCHAR(10)
+	);
+
+BULK INSERT #MyTempInsert
+FROM 'D:\Data Warehouse\File Uploads\RTT Residents\rttresidents.csv' WITH (
+		DATAFILETYPE = 'char'
+		,FIELDTERMINATOR = ','
+		,ROWTERMINATOR = '\n'
+		);
+
+--Delete the field header that gets bulk inserted along with the records so that the second insert works 
+DELETE
+FROM #MyTempInsert
+WHERE [COUNT] = 'Count';
+
+INSERT INTO [Published_Corporate].[dbo].[Performance_001_RTT_Residents] (
+	[Month]
+	,Specialty
+	,Category
+	,Subcategory
+	,[Count]
+	)
+SELECT CAST([Month] AS DATETIME)
+	,Specialty
+	,Category
+	,Subcategory
+	,CAST([Count] AS INT)
+FROM #MyTempInsert;

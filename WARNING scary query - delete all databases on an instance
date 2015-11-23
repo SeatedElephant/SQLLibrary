@@ -1,0 +1,25 @@
+USE master;
+
+DECLARE @DbnameForDrop VARCHAR(100);
+
+WHILE (
+		SELECT TOP 1 NAME
+		FROM master.dbo.sysdatabases
+		WHERE NAME <> 'master'
+			AND NAME <> 'model'
+			AND NAME <> 'msdb'
+			AND NAME <> 'tempdb'
+		) IS NOT NULL
+BEGIN
+	SET @DbnameForDrop = (
+			SELECT TOP 1 NAME
+			FROM master.dbo.sysdatabases
+			WHERE NAME <> 'master'
+				AND NAME <> 'model'
+				AND NAME <> 'msdb'
+				AND NAME <> 'tempdb'
+			)
+
+	--EXEC ('ALTER DATABASE ' + @DbnameForDrop +  ' SET SINGLE_USER');
+	EXEC ('DROP DATABASE ' + @DbnameForDrop);
+END;
