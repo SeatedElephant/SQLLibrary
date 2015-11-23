@@ -1,0 +1,32 @@
+-- Example of calling a stored procedure from a CATCH block outside a stored procedure and 
+-- then returning the error information from the stored procedure D.M 09/09/2014 (from BOL)
+-- Verify that the stored procedure does not exist.
+IF OBJECT_ID('usp_GetErrorInfo', 'P') IS NOT NULL
+	DROP PROCEDURE usp_GetErrorInfo;
+GO
+
+-- Create a procedure to retrieve error information.
+CREATE PROCEDURE usp_GetErrorInfo
+AS
+SELECT ERROR_NUMBER() AS ErrorNumber
+	,ERROR_SEVERITY() AS ErrorSeverity
+	,ERROR_STATE() AS ErrorState
+	,ERROR_PROCEDURE() AS ErrorProcedure
+	,ERROR_LINE() AS ErrorLine
+	,ERROR_MESSAGE() AS ErrorMessage;
+GO
+
+-- In this code the catch block calls the above stored procedure which will then return the
+-- various error messages using the error functions.
+BEGIN TRY
+	-- Generate divide-by-zero error.
+	SELECT 1 / 0;
+END TRY
+
+BEGIN CATCH
+	-- Execute the error retrieval routine.
+	EXECUTE usp_GetErrorInfo;
+END CATCH;
+GO
+
+
