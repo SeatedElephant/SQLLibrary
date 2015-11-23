@@ -1,0 +1,45 @@
+WITH digit
+AS (
+	SELECT 1 AS dig
+	
+	UNION
+	
+	SELECT 2 AS dig
+	
+	UNION
+	
+	SELECT 3 AS dig
+	
+	UNION
+	
+	SELECT 4 AS dig
+	
+	UNION
+	
+	SELECT 5 AS dig
+	
+	UNION
+	
+	SELECT 6 AS dig
+	
+	UNION
+	
+	SELECT 7 AS dig
+	
+	UNION
+	
+	SELECT 8 AS dig
+	
+	UNION
+	
+	SELECT 9 AS dig
+	
+	UNION
+	
+	SELECT 0 AS dig
+	)
+SELECT d1.dig * 100 + d2.dig * 10 + d3.dig + 1 AS num
+FROM digit AS d1
+CROSS JOIN digit AS d2
+CROSS JOIN digit AS d3
+ORDER BY num
