@@ -1,0 +1,42 @@
+USE [test]
+GO
+
+/****** Object:  UserDefinedFunction [dbo].[IsLeapYear]    Script Date: 06/27/2014 15:49:05 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		David Morris
+-- Create date: 27-06-2014
+-- Description:	This function takes a datetime field and check to see if it is a leap
+-- year. It returns 1 if the year is a leap year and 2 if the year is a normal year.  
+-- =============================================
+CREATE FUNCTION [dbo].[IsLeapYear] (
+	-- Input parameter
+	@date AS DATETIME
+	)
+RETURNS INT
+AS
+BEGIN
+	-- Declare the return variable
+	DECLARE @leapTrueFalse INT
+
+	-- Check the date to see if it is a leap year by seeing if the year and 
+	-- Feb the 29th is a valid date
+	SET @leapTrueFalse = (
+			SELECT CASE 
+					WHEN ISDATE(CAST(DATEPART(YEAR, @date) AS CHAR(4)) + '0229') = 1
+						THEN 1
+					ELSE 0
+					END
+			)
+
+	-- Return the result of the function
+	RETURN @leapTrueFalse
+END
+GO
+
+
