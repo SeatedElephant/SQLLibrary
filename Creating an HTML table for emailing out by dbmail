@@ -1,0 +1,375 @@
+USE [Published_IRIS]
+GO
+/****** Object:  StoredProcedure [dbo].[usp_IRIS_047_Weekly_UC_Email_HTML]    Script Date: 09/30/2014 15:28:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[usp_IRIS_047_Weekly_UC_Email_HTML]
+
+AS
+
+SET LANGUAGE British
+SET DATEFORMAT dmy
+
+
+/*
+
+-----------------------------------------
+Weekly Unscheduled Care Email
+-----------------------------------------
+
+This procedure creates the HTML script to populate
+the weekly email with an embedded HTML table of data
+taken from the IRIS reporting table
+
+
+Change control:
+
+Date		Done By		Change
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+29/09/2014	DM			Original script
+
+*/
+
+--declare the table variable which will cotain the pivoted rows 
+DECLARE @Results TABLE (Hospital varchar(50), Metric varchar(50), Monday int, Tuesday int, Wednesday int, Thursday int, Friday int, Saturday  int, Sunday int)
+
+--insert into the table variable and create the pivot virtual table
+INSERT INTO @Results(Hospital, Metric, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
+
+SELECT Hospital, 'Total Attendence' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalAttendances ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+ 
+UNION ALL
+
+SELECT Hospital, 'Total 4-Hour Breaches' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total4HourBreaches ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Total 8-Hour Breaches' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total8HourBreaches ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Total 12-Hour Breaches' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN Total12HourBreaches ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Total Emergency Admissions' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyAdmissions ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Total Emergency Discharges' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN TotalEmergencyDischarges ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Medically Fit' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN MedicallyFit ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'LOS 10 Days +' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN LOS10Days ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+UNION ALL
+
+SELECT Hospital, 'Ambulance Handover' AS Metric 
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Monday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Tuesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Wednesday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Thursday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Friday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Saturday'
+       ,SUM(CASE WHEN TheDate =  DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)) THEN AmbulanceHandover ELSE 0 END) AS 'Sunday'
+FROM Published_IRIS.dbo.IRIS_047_Daily_UC_Email 
+GROUP BY Hospital
+
+--SELECT * FROM @Results
+
+--declare and set the parameter with the values from the table variable and pad with html tags that will be used in the table
+-- Bronglais
+DECLARE @BronglaisValuesTotalAttendances varchar(200)
+SET @BronglaisValuesTotalAttendances = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total Attendence')
+DECLARE @BronglaisValues4Hour varchar(200)
+SET @BronglaisValues4Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total 4-Hour Breaches' )
+DECLARE @BronglaisValues8Hour varchar(200)
+SET @BronglaisValues8Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total 8-Hour Breaches' )
+DECLARE @BronglaisValues12Hour varchar(200)
+SET @BronglaisValues12Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total 12-Hour Breaches' )
+DECLARE @BronglaisValuesTotalAdmissions varchar(200)
+SET @BronglaisValuesTotalAdmissions = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total Emergency Admissions' )
+DECLARE @BronglaisValuesTotalDischarges varchar(200)
+SET @BronglaisValuesTotalDischarges = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Total Emergency Discharges' )
+DECLARE @BronglaisValuesMedicallyFit varchar(200)
+SET @BronglaisValuesMedicallyFit = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Medically Fit' )
+DECLARE @BronglaisValuesLOS varchar(200)
+SET @BronglaisValuesLOS = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'LOS 10 Days +' )
+DECLARE @BronglaisValuesAmbulance varchar(200)
+SET @BronglaisValuesAmbulance = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Bronglais General Hospital' and Metric = 'Ambulance Handover' )
+
+-- Glangwili
+DECLARE @GlangwiliValuesTotalAttendances varchar(200)
+SET @GlangwiliValuesTotalAttendances = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total Attendence')
+DECLARE @GlangwiliValues4Hour varchar(200)
+SET @GlangwiliValues4Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total 4-Hour Breaches' )
+DECLARE @GlangwiliValues8Hour varchar(200)
+SET @GlangwiliValues8Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total 8-Hour Breaches' )
+DECLARE @GlangwiliValues12Hour varchar(200)
+SET @GlangwiliValues12Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total 12-Hour Breaches' )
+DECLARE @GlangwiliValuesTotalAdmissions varchar(200)
+SET @GlangwiliValuesTotalAdmissions = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total Emergency Admissions' )
+DECLARE @GlangwiliValuesTotalDischarges varchar(200)
+SET @GlangwiliValuesTotalDischarges = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Total Emergency Discharges' )
+DECLARE @GlangwiliValuesMedicallyFit varchar(200)
+SET @GlangwiliValuesMedicallyFit = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Medically Fit' )
+DECLARE @GlangwiliValuesLOS varchar(200)
+SET @GlangwiliValuesLOS = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'LOS 10 Days +' )
+DECLARE @GlangwiliValuesAmbulance varchar(200)
+SET @GlangwiliValuesAmbulance = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Glangwili General Hospital' and Metric = 'Ambulance Handover' )
+
+-- Prince Philip
+DECLARE @PrincePhilipValuesTotalAttendances varchar(200)
+SET @PrincePhilipValuesTotalAttendances = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total Attendence')
+DECLARE @PrincePhilipValues4Hour varchar(200)
+SET @PrincePhilipValues4Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total 4-Hour Breaches' )
+DECLARE @PrincePhilipValues8Hour varchar(200)
+SET @PrincePhilipValues8Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total 8-Hour Breaches' )
+DECLARE @PrincePhilipValues12Hour varchar(200)
+SET @PrincePhilipValues12Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total 12-Hour Breaches' )
+DECLARE @PrincePhilipValuesTotalAdmissions varchar(200)
+SET @PrincePhilipValuesTotalAdmissions = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total Emergency Admissions' )
+DECLARE @PrincePhilipValuesTotalDischarges varchar(200)
+SET @PrincePhilipValuesTotalDischarges = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Total Emergency Discharges' )
+DECLARE @PrincePhilipValuesMedicallyFit varchar(200)
+SET @PrincePhilipValuesMedicallyFit = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Medically Fit' )
+DECLARE @PrincePhilipValuesLOS varchar(200)
+SET @PrincePhilipValuesLOS = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'LOS 10 Days +' )
+DECLARE @PrincePhilipValuesAmbulance varchar(200)
+SET @PrincePhilipValuesAmbulance = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Prince Philip Hospital' and Metric = 'Ambulance Handover' )
+
+-- Withybush
+DECLARE @WithybushValuesTotalAttendances varchar(200)
+SET @WithybushValuesTotalAttendances = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total Attendence')
+DECLARE @WithybushValues4Hour varchar(200)
+SET @WithybushValues4Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total 4-Hour Breaches' )
+DECLARE @WithybushValues8Hour varchar(200)
+SET @WithybushValues8Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total 8-Hour Breaches' )
+DECLARE @WithybushValues12Hour varchar(200)
+SET @WithybushValues12Hour = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total 12-Hour Breaches' )
+DECLARE @WithybushValuesTotalAdmissions varchar(200)
+SET @WithybushValuesTotalAdmissions = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total Emergency Admissions' )
+DECLARE @WithybushValuesTotalDischarges varchar(200)
+SET @WithybushValuesTotalDischarges = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Total Emergency Discharges' )
+DECLARE @WithybushValuesMedicallyFit varchar(200)
+SET @WithybushValuesMedicallyFit = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Medically Fit' )
+DECLARE @WithybushValuesLOS varchar(200)
+SET @WithybushValuesLOS = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'LOS 10 Days +' )
+DECLARE @WithybushValuesAmbulance varchar(200)
+SET @WithybushValuesAmbulance = (SELECT '<tr><td>' + Metric + '</td><td>'  + cast(Monday as varchar(10)) + '</td><td>' + cast(Tuesday as varchar(10)) + '</td><td>' + cast(Wednesday as varchar(10)) + '</td><td>' + cast(Thursday as varchar(10)) + '</td><td>'+ cast(Friday as varchar(10)) + '</td><td>' + cast(Saturday as varchar(10)) + '</td><td>' + cast(Sunday as varchar(10)) + '</td></tr>' FROM @Results where Hospital = 'Withybush General Hospital' and Metric = 'Ambulance Handover' )
+
+
+
+/*** Create the HTML Data into a table ***/
+
+--Empty the table
+
+TRUNCATE TABLE Published_IRIS.dbo.IRIS_047_Weekly_UC_Email_HTML
+
+--Set up the variables used in the tables columns headings for the day and date
+DECLARE @Monday varchar(15)
+SET @Monday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-7,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Tuesday varchar(15)
+SET @Tuesday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-6,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Wednesday varchar(15)
+SET @Wednesday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-5,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Thursday varchar(15)
+SET @Thursday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day, -4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-4,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Friday varchar(15)
+SET @Friday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-3,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Saturday varchar(15)
+SET @Saturday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-2,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+DECLARE @Sunday varchar(15)
+SET @Sunday = 
+(SELECT CASE datepart(dw, (DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME))))
+         WHEN 1 THEN 'Mon'
+         WHEN 2 THEN 'Tue'
+         WHEN 3 THEN 'Wed'
+         WHEN 4 THEN 'Thu'
+         WHEN 5 THEN 'Fri'
+         WHEN 6 THEN 'Sat'
+         WHEN 7 THEN 'Sun'
+       END + ' ' + CAST(DATEPART(day, (DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(month, (DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS VARCHAR(2))
+       + '/' + CAST(DATEPART(year, (DATEADD(day,-1,CAST(CAST(GETDATE() AS DATE) AS DATETIME)))) AS CHAR(4)))
+
+
+--Insert the HTML script into the table
+INSERT INTO Published_IRIS.dbo.IRIS_047_Weekly_UC_Email_HTML
+
+--Construct the html table used in the email from the parameter set.
+SELECT
+'<style>' +
+'td {border: solid black 1px;padding-left:5px;padding-right:5px;padding-top:1px;padding-bottom:1px;font-size:9pt;color:Black;text-align:center;} ' +
+'</style>' +
+ 
+'<table border="1" style="font-family: Arial; font-size:14px"><tr bgcolor="CornFlowerBlue"><td><font color="White">Bronglais</font></td><td><font color="White">' + @Monday + '</font></td><td><font color="White">' + @Tuesday + '</font></td><td><font color="White">' + @Wednesday + '</font></td><td><font color="White">' + @Thursday + '</font></td><td><font color="White">' + @Friday + '</font></td><td><font color="White">' + @Saturday + '</font></td><td><font color="White">' + @Sunday + '</font></td></tr>' 
++ ISNULL(@BronglaisValuesTotalAttendances,'-') + ISNULL(@BronglaisValues4Hour,'-') + ISNULL(@BronglaisValues8Hour,'-') + ISNULL(@BronglaisValues12Hour,'-')
++ ISNULL(@BronglaisValuesTotalAdmissions,'-') + ISNULL(@BronglaisValuesTotalDischarges,'-') + ISNULL(@BronglaisValuesMedicallyFit,'-') + ISNULL(@BronglaisValuesLOS,'-') + ISNULL(@BronglaisValuesAmbulance,'-')
++ '<tr bgcolor="CornFlowerBlue"><td><font color="White">Glangwili</font></td><td><font color="White">' + @Monday + '</font></td><td><font color="White">' + @Tuesday + '</font></td><td><font color="White">' + @Wednesday + '</font></td><td><font color="White">' + @Thursday + '</font></td><td><font color="White">' + @Friday + '</font></td><td><font color="White">' + @Saturday + '</font></td><td><font color="White">' + @Sunday + '</font></td></tr>' 
++ ISNULL(@GlangwiliValuesTotalAttendances,'-') + ISNULL(@GlangwiliValues4Hour,'-') + ISNULL(@GlangwiliValues8Hour,'-') + ISNULL(@GlangwiliValues12Hour,'-')
++ ISNULL(@GlangwiliValuesTotalAdmissions,'-') + ISNULL(@GlangwiliValuesTotalDischarges,'-') + ISNULL(@GlangwiliValuesMedicallyFit,'-') + ISNULL(@GlangwiliValuesLOS,'-') + ISNULL(@GlangwiliValuesAmbulance,'-')
++ '<tr bgcolor="CornFlowerBlue"><td><font color="White">Prince Philip</font></td><td><font color="White">' + @Monday + '</font></td><td><font color="White">' + @Tuesday + '</font></td><td><font color="White">' + @Wednesday + '</font></td><td><font color="White">' + @Thursday + '</font></td><td><font color="White">' + @Friday + '</font></td><td><font color="White">' + @Saturday + '</font></td><td><font color="White">' + @Sunday + '</font></td></tr>' 
++ ISNULL(@PrincePhilipValuesTotalAttendances,'-') + ISNULL(@PrincePhilipValues4Hour,'-') + ISNULL(@PrincePhilipValues8Hour,'-') + ISNULL(@PrincePhilipValues12Hour,'-')
++ ISNULL(@PrincePhilipValuesTotalAdmissions,'-') + ISNULL(@PrincePhilipValuesTotalDischarges,'-') + ISNULL(@PrincePhilipValuesMedicallyFit,'-') + ISNULL(@PrincePhilipValuesLOS,'-') + ISNULL(@PrincePhilipValuesAmbulance,'-')
++ '<tr bgcolor="CornFlowerBlue"><td><font color="White">Withybush</font></td><td><font color="White">' + @Monday + '</font></td><td><font color="White">' + @Tuesday + '</font></td><td><font color="White">' + @Wednesday + '</font></td><td><font color="White">' + @Thursday + '</font></td><td><font color="White">' + @Friday + '</font></td><td><font color="White">' + @Saturday + '</font></td><td><font color="White">' + @Sunday + '</font></td></tr>' 
++ ISNULL(@WithybushValuesTotalAttendances,'-') + ISNULL(@WithybushValues4Hour,'-') + ISNULL(@WithybushValues8Hour,'-') + ISNULL(@WithybushValues12Hour,'-')
++ ISNULL(@WithybushValuesTotalAdmissions,'-') + ISNULL(@WithybushValuesTotalDischarges,'-') + ISNULL(@WithybushValuesMedicallyFit,'-') + ISNULL(@WithybushValuesLOS,'-') + ISNULL(@WithybushValuesAmbulance,'-')
++ '</table>'
+
+--Publish data to the Reporting Server
+DELETE FROM [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_047_Weekly_UC_Email_HTML]
+INSERT INTO [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_047_Weekly_UC_Email_HTML]
+SELECT * FROM Published_IRIS.dbo.IRIS_047_Weekly_UC_Email_HTML
+
