@@ -1,0 +1,31 @@
+DECLARE @v VARCHAR(55) 
+SELECT @v = 'MyDatabase' 
+
+SELECT 
+DATABASEPROPERTY(@v,'IsAnsiNullDefault') AS IsAnsiNullDefault, 
+DATABASEPROPERTY(@v,'IsAnsiNullsEnabled') AS IsAnsiNullsEnabled, 
+DATABASEPROPERTY(@v,'IsAnsiWarningsEnabled') AS IsAnsiWarningsEnabled, 
+DATABASEPROPERTY(@v,'IsAutoClose') AS IsAutoClose, 
+DATABASEPROPERTY(@v,'IsAutoCreateStatistics') AS IsAutoCreateStatistics, 
+DATABASEPROPERTY(@v,'IsAutoShrink') AS IsAutoShrink, 
+DATABASEPROPERTY(@v,'IsAutoUpdateStatistics') AS IsAutoUpdateStatistics, 
+DATABASEPROPERTY(@v,'IsBulkCopy') AS IsBulkCopy, 
+DATABASEPROPERTY(@v,'IsDboOnly') AS IsDboOnly, 
+DATABASEPROPERTY(@v,'IsDetached') AS IsDetached, 
+DATABASEPROPERTY(@v,'IsEmergencyMode') AS IsEmergencyMode, 
+DATABASEPROPERTY(@v,'IsInLoad') AS IsInLoad, 
+DATABASEPROPERTY(@v,'IsInRecovery') AS IsInRecovery, 
+DATABASEPROPERTY(@v,'IsAutoClose') AS IsAutoClose, 
+DATABASEPROPERTY(@v,'IsInStandBy') AS IsInStandBy, 
+DATABASEPROPERTY(@v,'IsLocalCursorsDefault') AS IsLocalCursorsDefault, 
+DATABASEPROPERTY(@v,'IsNotRecovered') AS IsNotRecovered, 
+DATABASEPROPERTY(@v,'IsNullConcat') AS IsNullConcat, 
+DATABASEPROPERTY(@v,'IsOffline') AS IsOffline, 
+DATABASEPROPERTY(@v,'IsQuotedIdentifiersEnabled') AS IsQuotedIdentifiersEnabled, 
+DATABASEPROPERTY(@v,'IsReadOnly') AS IsReadOnly, 
+DATABASEPROPERTY(@v,'IsRecursiveTriggersEnabled') AS IsRecursiveTriggersEnabled, 
+DATABASEPROPERTY(@v,'IsShutDown') AS IsShutDown, 
+DATABASEPROPERTY(@v,'IsSingleUser') AS IsSingleUser, 
+DATABASEPROPERTY(@v,'IsSuspect') AS IsSuspect, 
+DATABASEPROPERTY(@v,'IsTruncLog') AS IsTruncLog, 
+DATABASEPROPERTY(@v,'Version') AS Version
