@@ -1,0 +1,35 @@
+WITH x(dy, dm, mth, dw, wk)
+AS(
+SELECT dy,
+       DAY(dy) dm,
+       DATEPART(M, dy) mth,
+       DATEPART(dw, dy) dw,
+       CASE 
+         WHEN DATEPART(dw, dy) = 1 THEN DATEPART(ww, dy) - 1
+         ELSE DATEPART(ww, dy)
+       END wk    
+FROM (
+SELECT DATEADD(DAY, -DAY(getdate())+1,getdate()) dy
+) x
+UNION ALL
+SELECT DATEADD(d, 1 ,dy), DAY(DATEADD(d, 1, dy)), 
+       mth,
+       DATEPART(dw, DATEADD(d , 1, dy)),
+       CASE 
+         WHEN DATEPART(dw, DATEADD(d, 1, dy)) = 1 THEN DATEPART(wk, DATEADD(d, 1, dy)) - 1
+         ELSE DATEPART(wk, DATEADD(d, 1, dy))
+       END
+FROM x
+WHERE DATEPART(M, DATEADD(d, 1, dy)) = mth
+
+)
+SELECT MAX(CASE dw WHEN 2 THEN dm END) AS Mo,
+       MAX(CASE dw WHEN 3 THEN dm END) AS Tu,
+       MAX(CASE dw WHEN 4 THEN dm END) AS We,
+       MAX(CASE dw WHEN 5 THEN dm END) AS Th,
+       MAX(CASE dw WHEN 6 THEN dm END) AS Fr,
+       MAX(CASE dw WHEN 7 THEN dm END) AS Sa,
+       MAX(CASE dw WHEN 1 THEN dm END) AS Su
+FROM x
+GROUP BY wk
+ORDER BY wk       
