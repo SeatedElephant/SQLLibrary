@@ -1,0 +1,33 @@
+/** Comparison of procedural approach using a cursor and loops
+    with a declaritive approach and time comparison DM 18/09/2014 **/
+
+/** Run one query at a time to see the individual timings and query plans **/
+
+Declare @dummy int
+Declare @X1 int
+Set @X1 = 0
+
+Declare XCursor Cursor LOCAL FORWARD_ONLY For
+Select 1
+From master.sys.columns c1
+Cross Join master.sys.columns c2
+OPEN XCursor
+FETCH NEXT FROM XCursor Into @Dummy
+WHILE @@Fetch_Status = 0
+Begin
+Set @X1 = @X1 + 1
+FETCH NEXT FROM XCursor Into @Dummy
+End
+Print @X1;
+-- Time to run, 13 seconds
+
+
+Declare @X2 int
+Set @X2
+= 
+(Select SUM(1)
+From master.sys.columns c1
+Cross Join master.sys.columns c2)
+print @X2
+
+-- Time to run, 0 seconds
