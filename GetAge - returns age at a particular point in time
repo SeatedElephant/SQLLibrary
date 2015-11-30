@@ -1,0 +1,32 @@
+USE [Admin_Tools]
+GO
+
+/****** Object:  UserDefinedFunction [dbo].[GetAge]    Script Date: 11/30/2015 09:51:24 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		Itzik Ben-Gan
+-- Create date: 23/09/2014 by D.Morris
+-- Description:	This function take two parameters a birthdate and an eventdate to work
+--              an individuals age at the time of the eventdate.
+-- =============================================
+ALTER FUNCTION [dbo].[GetAge] (
+	@birthdate AS DATE
+	,@eventdate AS DATE
+	)
+RETURNS INT
+AS
+BEGIN
+	RETURN DATEDIFF(year, @birthdate, @eventdate) - CASE 
+			WHEN 100 * MONTH(@eventdate) + DAY(@eventdate) < 100 * MONTH(@birthdate) + DAY(@birthdate)
+				THEN 1
+			ELSE 0
+			END;
+END;
+
+
+
