@@ -1,0 +1,215 @@
+USE [Corporate_Reporting]
+GO
+/****** Object:  StoredProcedure [dbo].[usp_008_Chronic_Conditions_Practice]    Script Date: 01/13/2016 16:48:57 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<David Morris>
+-- Create date: <12/01/2016>
+-- Description:	<Procedure used by the main dataset in the performance report '008 Chronic Conditions'. 
+--				The procedure takes the report parameters and using the table  dbo.SR_038_Chronic_Conditions
+--				in the DB Corporate_Reporting returns at dataset for the GP cluster version of the reports>
+-- =============================================
+
+CREATE PROCEDURE [dbo].[usp_008_Chronic_Conditions_Practice] 
+	-- Add the parameters for the stored procedure here
+	@TheFinancialYear VARCHAR(max), 
+	@Condition VARCHAR(max),
+	@Cluster VARCHAR(max),
+	@Practice VARCHAR(max)
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	--The following four create and insert statements are used to handle the multi-value parameters used in the SSRS report.
+	--These must be split in some way to get the individual values. These tables are then used later in the procedure to 
+	--filter for the parameters. Doing the filtering via the temp table increases the performance of query markedly, going 
+	--from a running time of nearly 30 mins to less than a minute. 	
+	CREATE TABLE #TempParamFY (
+	Condition VARCHAR(MAX)
+	);
+	INSERT INTO #TempParamFY
+	SELECT * FROM dbo.splitstring(@TheFinancialYear);
+
+	CREATE TABLE #TempParamCondition (
+	Condition VARCHAR(MAX)
+	);
+	INSERT INTO #TempParamCondition 
+	SELECT * FROM dbo.splitstring(@Condition);
+	
+	CREATE TABLE #TempParamCluster (
+	Condition VARCHAR(MAX)
+	);
+	INSERT INTO #TempParamCluster
+	SELECT * FROM dbo.splitstring(@Cluster)
+	UNION ALL
+	SELECT 'Unknown';
+
+	CREATE TABLE #TempParamPractice (
+	Condition VARCHAR(MAX)
+	);
+	INSERT INTO #TempParamPractice 
+	SELECT * FROM dbo.splitstring(@Practice)
+	UNION ALL
+	SELECT 'Unknown';
+
+    -- Insert statements for procedure here
+	CREATE TABLE #TempRes1 (
+	TheMonth DATETIME NULL
+	,TheMonthFormat CHAR(8)
+	,condition VARCHAR(100) NULL
+	,cluster VARCHAR(100) NULL
+	,practice VARCHAR(100) NULL
+	,value INT NULL
+	);
+
+	CREATE TABLE #TempResultsChron (
+	TheMonth DATETIME NULL
+	,TheMonthFormat CHAR(8)	
+	,condition VARCHAR(100) NULL
+	,cluster VARCHAR(100) NULL
+	,practice VARCHAR(100) NULL
+	,value INT NULL
+	);
+
+	--Create the tables and do the inserts for the dummy rows section
+	CREATE TABLE #ConditionTempTable (
+				 Condition VARCHAR(100) NULL 
+				 );
+
+	INSERT #ConditionTempTable
+	SELECT DISTINCT condition
+	FROM dbo.SR_038_Chronic_Conditions;
+
+	CREATE TABLE #ClusterTempTable (
+				Cluster VARCHAR(100) NULL
+				);
+				
+	INSERT #ClusterTempTable
+	SELECT DISTINCT PracticeLocality
+	FROM dbo.SR_038_Chronic_Conditions
+	WHERE PracticeLocality IS NOT NULL
+	UNION ALL -- needed else the joins in the final select don't produce the correct figures  
+	SELECT 'Unknown'; 
+
+	CREATE TABLE #PracticeTempTable (
+				 Practice VARCHAR(100) NULL
+				 );
+
+	INSERT #PracticeTempTable
+	SELECT DISTINCT LocalPracticeName
+	FROM dbo.SR_038_Chronic_Conditions
+	WHERE LocalPracticeName IS NOT NULL
+	UNION ALL -- needed else the joins in the final select don't produce the correct figures 
+	SELECT 'Unknown';
+
+	--Get the the records that exist, and then union on dummy rows so that if a 'condition' does not
+	--exist for a month we still meet the inner join condition and get the a value in the final result set 
+	INSERT INTO #TempRes1
+	SELECT dateadd(month, datediff(month, 0, admission_date), 0) AS TheMonth
+		,LEFT(DateName(m,admission_date),3) + '-' + CAST(YEAR(admission_date) AS CHAR(4)) AS TheMonthFormat
+		,condition
+		,CASE WHEN PracticeLocality IS NULL THEN 'Unknown' ELSE PracticeLocality END AS Cluster
+		,CASE WHEN LocalPracticeName IS NULL THEN 'Unknown' ELSE LocalPracticeName END  AS Practice    
+		,1 AS Value
+	FROM dbo.SR_038_Chronic_Conditions A
+	WHERE Hospital_Code IN (
+			'7A2AG'
+			,'7A2AL'
+			,'7A2AJ'
+			,'7A2BL'
+			)
+	AND dateadd(month, datediff(month, 0, admission_date), 0) >= '01-April-2011'		
+
+	/* Start the union of dummy rows section */
+	UNION ALL
+
+	SELECT DISTINCT dateadd(month, datediff(month, 0, c.d), 0) AS TheMonth, LEFT(DateName(m,admission_date),3) + '-' + CAST(YEAR(admission_date) AS CHAR(4)) AS TheMonthFormat, b.Condition AS Condition, d.Cluster AS Cluster, e.Practice AS Practice, NULL AS value
+	FROM Admin_Tools.dbo.Calendar AS c
+	left outer join dbo.SR_038_Chronic_Conditions AS a ON (c.d = a.admission_date)
+	,#ConditionTempTable AS b
+	,#ClusterTempTable AS d
+	,#PracticeTempTable AS e 
+	WHERE dateadd(month, datediff(month, 0, c.d), 0) <= (SELECT MAX(admission_date) FROM dbo.SR_038_Chronic_Conditions)
+	AND dateadd(month, datediff(month, 0, c.d), 0) >= '01-April-2011';
+	/*End the UNION of dummys rows section */
+
+	--Do the group here as now we have the missing conditions in the data and will have values
+	--when we come to do the join to produce the rolling totals
+	INSERT INTO #TempResultsChron
+	SELECT TheMonth
+		,TheMonthFormat
+		,condition
+		,cluster
+		,practice
+		,SUM(value)
+	FROM #TempRes1
+	GROUP BY TheMonth
+		,TheMonthFormat
+		,condition
+		,cluster
+		,practice;
+
+	--Rolling twelve month total by using a correlated sub-query
+	SELECT --TempResultsChron2.[condition] AS Condition
+		TempResultsChron2.TheMonth AS TheMonth
+		,TempResultsChron2.TheMonthFormat AS TheMonthFormat
+		,TempResultsChron2.condition AS Condition
+		,TempResultsChron2.cluster AS Cluster
+		,TempResultsChron2.practice AS Practice
+		,sum(TempResultsChron1.Value) AS Value
+	FROM #TempResultsChron AS TempResultsChron1
+	INNER JOIN #TempResultsChron AS TempResultsChron2 ON (
+			TempResultsChron1.TheMonth > dateadd(year, - 1, TempResultsChron2.TheMonth)
+			AND TempResultsChron1.TheMonth <= TempResultsChron2.TheMonth
+			)
+		AND TempResultsChron1.condition = TempResultsChron2.condition
+		AND TempResultsChron1.cluster = TempResultsChron2.cluster
+		AND TempResultsChron1.practice = TempResultsChron2.practice
+	WHERE CASE 
+			WHEN DATEPART(month, TempResultsChron2.[TheMonth]) IN (
+					4
+					,5
+					,6
+					,7
+					,8
+					,9
+					,10
+					,11
+					,12
+					)
+				THEN CAST(YEAR(TempResultsChron2.[TheMonth]) AS VARCHAR) + '/' + CAST(YEAR(DATEADD(d, 365, TempResultsChron2.[TheMonth])) AS VARCHAR)
+			WHEN DATEPART(month, TempResultsChron2.[TheMonth]) IN (
+					1
+					,2
+					,3
+					)
+				THEN CAST(YEAR(DATEADD(d, - 365, TempResultsChron2.[TheMonth])) AS VARCHAR) + '/' + CAST(YEAR(TempResultsChron2.[TheMonth]) AS VARCHAR)
+			END IN (select * from #TempParamFY)
+	AND TempResultsChron2.condition IN (select * from #TempParamCondition)
+	AND TempResultsChron2.cluster IN (select * from #TempParamCluster)
+	AND TempResultsChron2.practice IN (select * from #TempParamPractice)
+	GROUP BY TempResultsChron2.[TheMonth]
+		,TempResultsChron2.[TheMonthFormat]
+		,TempResultsChron2.condition
+		,TempResultsChron2.cluster
+		,TempResultsChron2.practice
+	ORDER BY TempResultsChron2.[TheMonth]
+		,TempResultsChron2.[condition];
+
+	--Tidy up
+	DROP TABLE #TempRes1;
+	DROP TABLE #TempResultsChron;
+	DROP TABLE #ConditionTempTable;
+	DROP TABLE #ClusterTempTable;
+	DROP TABLE #PracticeTempTable;
+	DROP TABLE #TempParamFY;
+	DROP TABLE #TempParamCondition;
+	DROP TABLE #TempParamCluster;
+	DROP TABLE #TempParamPractice;
+
+END
