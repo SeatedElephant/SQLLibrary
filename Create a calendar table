@@ -1,6 +1,0 @@
-CREATE TABLE dbo.Calendar(d DATE PRIMARY KEY);
-
-INSERT dbo.Calendar(d) 
-SELECT TOP (365) DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY number)-1, '20140101')
-FROM [master].dbo.spt_values
-WHERE [type] = N'P' ORDER BY number;
