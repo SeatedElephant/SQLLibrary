@@ -1,19 +1,9 @@
-USE [Admin_Tools]
+USE [Admin_Tools];
 GO
 
-/****** Object:  Table [dbo].[Calendar]    Script Date: 03/09/2016 15:41:58 ******/
-SET ANSI_NULLS ON
-GO
+CREATE TABLE dbo.Calendar(d DATE PRIMARY KEY);
 
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[Calendar](
-	[d] [date] NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[d] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
+INSERT dbo.Calendar(d) 
+SELECT TOP (365) DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY number)-1, '20140101')
+FROM [master].dbo.spt_values
+WHERE [type] = N'P' ORDER BY number;
