@@ -1,0 +1,19 @@
+USE [Admin_Tools]
+GO
+
+/****** Object:  Table [dbo].[Calendar]    Script Date: 03/09/2016 15:41:58 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Calendar](
+	[d] [date] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[d] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
