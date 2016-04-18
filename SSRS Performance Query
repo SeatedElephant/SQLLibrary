@@ -1,0 +1,10 @@
+--This query provides metrics on the length of time SSRS reports take to run on the report server.
+--'ExecutionLog3' is a view in the ReportServer database and this can be used for this purpose 
+--in SQL Server version 2008 R2 and later.
+
+SELECT TOP 10 Itempath,parameters,
+     TimeDataRetrieval + TimeProcessing + TimeRendering as [total time],
+     TimeDataRetrieval, TimeProcessing, TimeRendering,
+     ByteCount, [RowCount],Source, AdditionalInfo
+FROM ExecutionLog3
+ORDER BY Timestart DESC
