@@ -1,0 +1,64 @@
+USE [Data_National_Datasets_Provider]
+GO
+/****** Object:  Trigger [dbo].[trg_Performance_009_Clinical_Coding]    Script Date: 04/27/2016 10:13:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		David Morris
+-- Create date: 16/02/2016
+-- Description:	Trigger to insert new aggregated rows into the performance tables on 0002 and 0003 for
+--				the clinical coding performance tables. The data comes in from NWIS to the table ClinicalCoding_HywelDda.
+--				This table is truncated and then new records inserted, firing the trigger. 
+-- =============================================
+ALTER TRIGGER [dbo].[trg_Performance_009_Clinical_Coding] 
+   ON  [Data_National_Datasets_Provider].[dbo].[ClinicalCoding_HywelDda] 
+   AFTER INSERT
+AS 
+BEGIN
+	
+	-- SET XACT_ABORT to ON so that is a T-SQL statement raises an error the whole transaction is rolled back
+	SET XACT_ABORT ON
+	
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	-- Truncate table
+	TRUNCATE TABLE Published_Corporate.dbo.Performance_009_Clinical_Coding;  
+	
+    -- Insert statements for trigger here
+	INSERT INTO Published_Corporate.dbo.Performance_009_Clinical_Coding    
+		SELECT CASE 
+			WHEN CAST(RIGHT([Month],2) AS INT) BETWEEN 4 AND 12 THEN LEFT([Month], 4) + '/' + CAST(DATEADD(year, 1, CAST(LEFT([Month], 4) AS DATE)) AS CHAR(4))
+			ELSE CAST(DATEADD(year, -1, CAST(LEFT([Month], 4) AS DATE)) AS CHAR(4)) + '/' + LEFT([Month], 4)  
+		   END AS FinancialYear
+		   ,CAST([Month] + '01' AS DATE) AS TheMonth
+		   ,HospitalName
+		   ,SpecialtyTreat + ' - ' + SpecialtyDesc AS Specialy
+		   ,SUM(TotalRecs) AS TotalRecs
+		   ,SUM(TotalValidPrimaryDiag) AS TotalValidPrimaryDiag 
+		FROM  Data_National_Datasets_Provider.dbo.ClinicalCoding_HywelDda
+		GROUP BY CASE 
+			WHEN CAST(RIGHT([Month],2) AS INT) BETWEEN 4 AND 12 THEN LEFT([Month], 4) + '/' + CAST(DATEADD(year, 1, CAST(LEFT([Month], 4) AS DATE)) AS CHAR(4))
+			ELSE CAST(DATEADD(year, -1, CAST(LEFT([Month], 4) AS DATE)) AS CHAR(4)) + '/' + LEFT([Month], 4)  
+		   END
+		   ,CAST([Month] + '01' AS DATE)
+		   ,HospitalName
+		   ,SpecialtyTreat + ' - ' + SpecialtyDesc;
+		   
+	-- Copy the data to the reporting server
+	DELETE FROM [7A2BLSRVINF0003].[Corporate_Reporting].[dbo].[Performance_009_Clinical_Coding]
+	
+	-- Insert the reocrds from the dev server table to the reporting server table
+	INSERT INTO [7A2BLSRVINF0003].[Corporate_Reporting].[dbo].[Performance_009_Clinical_Coding] 
+	SELECT [FinancialYear]
+      ,[TheMonth]
+      ,[HospitalName]
+      ,[Specialty]
+      ,[TotalRecs]
+      ,[TotalValidPrimaryDiag]
+    FROM [Published_Corporate].[dbo].[Performance_009_Clinical_Coding];  
+    
+END
