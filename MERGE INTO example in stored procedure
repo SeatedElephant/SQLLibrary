@@ -1,0 +1,145 @@
+USE [Published_IRIS]
+GO
+/****** Object:  StoredProcedure [dbo].[usp_IRIS_063_Bed_Complement]    Script Date: 05/18/2016 09:36:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+/*
+
+-----------------------------------------
+Bed Complement Figures
+-----------------------------------------
+
+The procedure publishes changes made to the main Bed_Complement table (serving the Bed
+Complement Manager) to relevant tables in Published_IRIS on ********* and to 
+IRIS_Reporting on ********** 
+
+Change control:
+
+Date		Done By		Change
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+07/07/2015	DM			Initial Script
+20/07/2015  DM			Added the RIGHT function to the main query to capture only the last two digits of the
+						year for the column TheMonthFormatted
+
+*/
+
+ALTER PROCEDURE  [dbo].[usp_IRIS_063_Bed_Complement]
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	SET LANGUAGE British
+	SET DATEFORMAT dmy
+
+IF OBJECT_ID('tempdb..#TempInsertTable') IS NOT NULL
+    DROP TABLE #TempInsertTable;
+
+CREATE TABLE #TempInsertTable
+(
+	[TheMonth] [datetime] NULL,
+	[TheMonthFormatted] [char](6) NULL,
+	[FinancialYear] [char](9) NULL,
+	[ProviderSiteName] [varchar](250) NULL,
+	[WardLocation] [varchar](250) NULL,
+	[MainSpecialty] [varchar](256) NULL,
+	[InpatientCount] [int] NULL,
+	[DayCaseCount] [int] NULL,
+	[TrolleyCount] [int] NULL,
+	[RoomCount] [int] NULL
+); 
+
+--insert into the temp table only those records that exist/are different in the base table 
+--compared to the IRIS tables.
+INSERT INTO #TempInsertTable
+SELECT A.TheMonth
+	  ,LEFT(DATENAME(MONTH, A.TheMonth), 3) + '-' + RIGHT(DATENAME(YEAR, A.TheMonth),2) AS TheMonthFormatted
+	  ,CASE 
+	    WHEN DATEPART(MONTH, A.TheMonth) IN (1,2,3) THEN CAST((DATEPART(YEAR, A.TheMonth) - 1) AS VARCHAR) + '/' + DATENAME(YEAR, A.TheMonth)
+	    ELSE DATENAME(YEAR, A.TheMonth) + '/' + CAST(DATEPART(YEAR, A.TheMonth) + 1 AS VARCHAR)
+	   END AS FinancialYear 
+	  ,P.ProviderSiteName + ' (' + A.ProviderSiteCode + ')' AS ProviderSiteName
+	  ,W.WardLocation
+	  ,LEFT(A.SpecialtyCode, 3) + ' - ' + S.MainSpecialtyName AS MainSpecialty
+	  ,A.InpatientCount
+	  ,A.DayCaseCount
+	  ,A.TrolleyCount
+	  ,A.RoomCount
+FROM [Data_Bed_Complement].[dbo].[Bed_Complement] AS A
+      LEFT OUTER JOIN Data_Reference_Tables.dbo.Lookup_Bed_Complement_Providers AS P
+  ON P.ProviderSiteCode = A.ProviderSiteCode
+      LEFT OUTER JOIN Data_Reference_Tables.dbo.Lookup_Bed_Complement_Wards AS W
+  ON W.WardLocationCode = A.WardLocationCode
+      LEFT OUTER JOIN Data_Reference_Tables.dbo.Lookup_Bed_Complement_Specialties AS S				
+  ON S.SpecialtyCode = A.SpecialtyCode
+
+--Merge the records that have been updated, inserted or deleted in the base table with the
+--Published_IRIS table on 0002 		  
+MERGE INTO [Published_IRIS].[dbo].[IRIS_063_Bed_Complement] A
+USING (
+  SELECT [TheMonth]
+      ,[TheMonthFormatted]
+      ,[FinancialYear]
+      ,[ProviderSiteName]
+      ,[WardLocation]
+      ,[MainSpecialty]
+      ,[InpatientCount]
+      ,[DayCaseCount]
+      ,[TrolleyCount]
+      ,[RoomCount]
+  FROM #TempInsertTable) B
+ON (A.[TheMonth] = B.[TheMonth]
+    AND A.[ProviderSiteName] = B.[ProviderSiteName]
+    AND A.[WardLocation] = B.[WardLocation] 
+    AND A.[MainSpecialty] = B.[MainSpecialty]) 
+WHEN MATCHED THEN
+  UPDATE SET A.[InpatientCount] = B.[InpatientCount]
+			, A.[DayCaseCount] = B.[DayCaseCount]
+			, A.[TrolleyCount] = B.[TrolleyCount]
+			, A.[RoomCount] = B.[RoomCount] 	
+WHEN NOT MATCHED BY TARGET THEN
+  INSERT ([TheMonth]
+      ,[TheMonthFormatted]
+      ,[FinancialYear]
+      ,[ProviderSiteName]
+      ,[WardLocation]
+      ,[MainSpecialty]
+      ,[InpatientCount]
+      ,[DayCaseCount]
+      ,[TrolleyCount]
+      ,[RoomCount])
+  VALUES ([TheMonth]
+      ,[TheMonthFormatted]
+      ,[FinancialYear]
+      ,[ProviderSiteName]
+      ,[WardLocation]
+      ,[MainSpecialty]
+      ,[InpatientCount]
+      ,[DayCaseCount]
+      ,[TrolleyCount]
+      ,[RoomCount])
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE; 
+	
+--Clean up the temp table
+DROP TABLE #TempInsertTable;
+
+--Insert the new records into the IRIS_Reporting database table on 0003
+DELETE FROM [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement];
+INSERT INTO [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement]
+SELECT [TheMonth]
+      ,[TheMonthFormatted]
+      ,[FinancialYear]
+      ,[ProviderSiteName]
+      ,[WardLocation]
+      ,[MainSpecialty]
+      ,[InpatientCount]
+      ,[DayCaseCount]
+      ,[TrolleyCount]
+      ,[RoomCount]
+FROM [Published_IRIS].[dbo].[IRIS_063_Bed_Complement];
+	       
+END
