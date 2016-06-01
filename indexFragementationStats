@@ -1,8 +1,0 @@
-
---This will give some info on index fragmentation
-DBCC SHOWCONTIG
-
---This gives some good details on index fragmentation
-select i.name,avg_fragmentation_in_percent 
- from sys.dm_db_index_physical_stats(db_id(),null,null,null,null) 
- S inner join sys.indexes I on s.object_id=I.object_id and s.index_id=i.index_id
