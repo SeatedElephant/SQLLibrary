@@ -1,0 +1,13 @@
+
+set statistics io on;
+go
+
+--Copy data to report server
+EXEC('
+TRUNCATE TABLE Test.dbo.OutpatientsSSRSTest
+') AT [7A2BLSRVINF0003]
+INSERT INTO [7A2BLSRVINF0003].[Test].[dbo].[OutpatientsSSRSTest]
+SELECT * FROM Published_Analyst.dbo.Outpatients;
+
+set statistics io off;
+go
