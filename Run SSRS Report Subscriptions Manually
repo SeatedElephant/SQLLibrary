@@ -1,0 +1,3 @@
+--Run one of the Report Manager subscription for a report
+EXEC ReportServer.dbo.AddEvent @EventType='TimedSubscription', 
+@EventData='bdfdab0b-70f0-4d28-ac0d-ddcc061a09f4' 
