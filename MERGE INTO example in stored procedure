@@ -13,8 +13,8 @@ Bed Complement Figures
 -----------------------------------------
 
 The procedure publishes changes made to the main Bed_Complement table (serving the Bed
-Complement Manager) to relevant tables in Published_IRIS on ********* and to 
-IRIS_Reporting on ********** 
+Complement Manager) to relevant tables in Published_IRIS on Server1 and to 
+IRIS_Reporting on Server2 
 
 Change control:
 
@@ -128,8 +128,8 @@ WHEN NOT MATCHED BY SOURCE THEN
 DROP TABLE #TempInsertTable;
 
 --Insert the new records into the IRIS_Reporting database table on 0003
-DELETE FROM [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement];
-INSERT INTO [7A2BLSRVINF0003].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement]
+DELETE FROM [Server2].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement];
+INSERT INTO [Server2].[IRIS_Reporting].[dbo].[IRIS_063_Bed_Complement]
 SELECT [TheMonth]
       ,[TheMonthFormatted]
       ,[FinancialYear]
@@ -140,6 +140,6 @@ SELECT [TheMonth]
       ,[DayCaseCount]
       ,[TrolleyCount]
       ,[RoomCount]
-FROM [Published_IRIS].[dbo].[IRIS_063_Bed_Complement];
+FROM [Server1].[Published_IRIS].[dbo].[IRIS_063_Bed_Complement];
 	       
 END
