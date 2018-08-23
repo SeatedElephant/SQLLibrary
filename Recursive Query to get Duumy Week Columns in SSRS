@@ -1,0 +1,50 @@
+DECLARE @StartMonth2 AS DATETIME;
+DECLARE @EndMonth2 AS DATETIME;
+SET @StartMonth2 = @StartMonth;
+SET @EndMonth2 = @EndMonth;
+
+WITH x (begin_date,end_date)
+AS (
+SELECT CASE 
+     WHEN DATENAME(dw,@StartMonth2) <> 'Sunday' THEN CAST(DATEADD(DAY,-(DATEPART(DW,@StartMonth2)) + 1,@StartMonth2) AS DATE) 
+    ELSE CAST(@StartMonth2 AS DATE) 
+   END begin_date, DATEADD(DD,-1,DATEADD(M,1,@EndMonth2)) end_date 
+UNION ALL 
+SELECT DATEADD(DD,7,begin_date), end_date
+FROM x
+WHERE DATEADD(DD,7,begin_date) <= end_date
+)
+
+SELECT [TheMeasure]
+      ,[TheMonth]
+      ,[WeekStartingSunday]
+      ,[MainSpecialty]
+      ,[Drilldown]
+      ,SUM([TheCount]) AS TheCount
+FROM [IRIS_Reporting].[dbo].[IRIS_101_Ward_Throughput]
+WHERE Ward = @Ward
+AND TheMonth BETWEEN @StartMonth2 AND DATEADD(DD,-1,DATEADD(M,1,@EndMonth2))
+GROUP BY [TheMeasure]
+      ,[TheMonth]
+      ,[WeekStartingSunday]
+      ,[MainSpecialty]
+      ,[Drilldown]
+
+UNION ALL
+
+SELECT TheMeasure
+  ,DATEADD(DD,-DATEPART(DD,begin_date) + 1, begin_date) AS TheMonth
+  ,begin_date AS WeekStartingSunday
+  ,NULL AS MainSpecialty
+  ,Drilldown
+  ,0 AS TheCount
+FROM (SELECT DISTINCT TheMeasure, Drilldown, begin_date 
+   FROM [IRIS_Reporting].[dbo].[IRIS_101_Ward_Throughput]
+   CROSS JOIN x) y
+WHERE begin_date < GETDATE()
+AND TheMeasure <> 'Transfers into ward'  
+AND TheMeasure <> 'Transfers out of ward'
+AND TheMeasure <> 'Destinations'
+ORDER By WeekStartingSunday
+
+OPTION (MAXRECURSION 0)
